@@ -1,0 +1,26 @@
+{
+  "version": "1.0",
+  "defaultProvider": "cdnjs",
+	"libraries": [
+		{
+			"provider": "cdnjs",
+			"library": "vue@3.2.37",
+			"destination": "wwwroot/lib/vue/"
+		},
+		{
+			"provider": "cdnjs",
+			"library": "axios@0.27.2",
+			"destination": "wwwroot/lib/axios/"
+		},
+		{
+			"provider": "cdnjs",
+			"library": "sweetalert@2.1.2",
+			"destination": "wwwroot/lib/sweetalert/"
+		},
+		{
+			"provider": "cdnjs",
+			"library": "font-awesome@6.1.2",
+			"destination": "wwwroot/lib/font-awesome/"
+		}
+	]
+}

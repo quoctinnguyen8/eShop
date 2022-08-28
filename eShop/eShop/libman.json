@@ -1,0 +1,22 @@
+{
+	"version": "1.0",
+	"defaultProvider": "cdnjs",
+	"libraries": [
+		{
+			"library": "vue@3.2.37",
+			"destination": "wwwroot/lib/vue/"
+		},
+		{
+			"library": "axios@0.27.2",
+			"destination": "wwwroot/lib/axios/"
+		},
+		{
+			"library": "sweetalert@2.1.2",
+			"destination": "wwwroot/lib/sweetalert/"
+		},
+		{
+			"library": "font-awesome@6.1.2",
+			"destination": "wwwroot/lib/font-awesome/"
+		}
+	]
+}

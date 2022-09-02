@@ -1,6 +1,9 @@
-﻿using eShop.Areas.Admin.ViewModels.Category;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using eShop.Areas.Admin.ViewModels.Category;
 using eShop.Database;
 using eShop.Database.Entities;
+using eShop.WebConfigs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,19 +11,16 @@ namespace eShop.Areas.Admin.Controllers
 {
 	public class CategoryController : BaseController
 	{
-		public CategoryController(AppDbContext db) : base(db)
+		private readonly IMapper _mapper;
+		public CategoryController(AppDbContext db, IMapper mapper) : base(db)
 		{
+			_mapper = mapper;
 		}
 
 		public IActionResult Index()
 		{
 			var query = _db.ProductCategories
-						.Select(c => new ListItemCategoryVM
-						{
-							Id = c.Id,
-							Name = c.Name,
-							CreatedAt = c.CreatedAt
-						})
+						.ProjectTo<ListItemCategoryVM>(AutoMapperProfile.categoryAMC)
 						.OrderByDescending(c => c.Id);
 			ViewBag.Sql = query.ToQueryString();
 			var data = query.ToList();
@@ -41,9 +41,45 @@ namespace eShop.Areas.Admin.Controllers
 			var category = new ProductCategory();
 			category.CreatedAt = DateTime.Now;
 			category.UpdatedAt = DateTime.Now;
-			category.Name = categoryVM.Name;
+			_mapper.Map(categoryVM, category);
 			_db.ProductCategories.Add(category);
 			_db.SaveChanges();
+			return RedirectToAction(nameof(Index));
+		}
+
+		public IActionResult Update(int id)
+		{
+			var category = _db.ProductCategories
+					.Where(c => c.Id == id)
+					.ProjectTo<AddOrUpdateCategoryVM>(AutoMapperProfile.categoryAMC)
+					.FirstOrDefault();
+			if (category == null) return RedirectToAction(nameof(Index));
+			return View(category);
+		}
+
+		[HttpPost]
+		public IActionResult Update(int id, AddOrUpdateCategoryVM categoryVM)
+		{
+			var category = _db.ProductCategories
+					.FirstOrDefault(c => c.Id == id);
+			category.UpdatedAt = DateTime.Now;
+			_mapper.Map(categoryVM, category);
+			_db.SaveChanges();
+			return RedirectToAction(nameof(Index));
+		}
+
+		public IActionResult Delete(int id)
+		{
+			if (_db.Products.Any(p => p.CategoryId == id))
+			{
+				TempData["Err"] = "Không thể xóa vì danh mục đã được sử dụng";
+			}
+			else
+			{
+				var category = _db.ProductCategories.Find(id);
+				_db.Remove(category);
+				_db.SaveChanges();
+			}
 			return RedirectToAction(nameof(Index));
 		}
 	}

@@ -1,4 +1,6 @@
+using AutoMapper;
 using eShop.Database;
+using eShop.WebConfigs;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +13,15 @@ builder.Services.AddDbContext<AppDbContext>(opts =>
 	var connectionString = builder.Configuration.GetConnectionString("Db");
 	opts.UseSqlServer(connectionString);
 });
+
+// Cấu hình AutoMapper
+var mapperConfig = new MapperConfiguration(config =>
+{
+	config.AddProfile(new AutoMapperProfile());
+});
+IMapper mapper = mapperConfig.CreateMapper();
+builder.Services.AddSingleton(mapper);
+
 
 var app = builder.Build();
 

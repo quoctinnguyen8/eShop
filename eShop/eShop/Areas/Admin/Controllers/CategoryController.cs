@@ -19,12 +19,16 @@ namespace eShop.Areas.Admin.Controllers
 
 		public IActionResult Index()
 		{
+			return View();
+		}
+
+		public List<ListItemCategoryVM> GetAll()
+		{
 			var query = _db.ProductCategories
 						.ProjectTo<ListItemCategoryVM>(AutoMapperProfile.categoryAMC)
 						.OrderByDescending(c => c.Id);
-			ViewBag.Sql = query.ToQueryString();
 			var data = query.ToList();
-			return View("Index", data);
+			return data;
 		}
 
 		public IActionResult Create() => View();

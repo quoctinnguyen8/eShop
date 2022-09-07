@@ -18,41 +18,63 @@
 	</div>
 }
 
-<table class="table">
-	<thead>
-		<tr>
-			<th>
-				@Html.DisplayNameFor(model => model.Name)
-			</th>
-			<th>
-				@Html.DisplayNameFor(model => model.Id)
-			</th>
-			<th>
-				@Html.DisplayNameFor(model => model.CreatedAt)
-			</th>
-			<th></th>
-		</tr>
-	</thead>
-	<tbody>
-		@foreach (var item in Model)
-		{
+<div id="tblCate">
+	<button class="btn btn-info my-3" @@click="refreshData()">Làm mới dữ liệu</button>
+	<table class="table">
+		<thead>
 			<tr>
+				<th>ID</th>
+				<th>Tên danh mục</th>
+				<th>Tạo lúc</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr v-for="cate in categories">
+				<td>{{cate.id}}</td>
+				<td>{{cate.name}}</td>
+				<td>{{new Date(cate.createdAt).toLocaleString()}}</td>
 				<td>
-					@Html.DisplayFor(modelItem => item.Name)
-				</td>
-				<td>
-					@Html.DisplayFor(modelItem => item.Id)
-				</td>
-				<td>
-					@Html.DisplayFor(modelItem => item.CreatedAt)
-				</td>
-				<td>
-					<a asp-action="Update" asp-route-id="@item.Id">Sửa</a>
-					<a asp-action="Delete" asp-route-id="@item.Id">Xóa</a>
+					<a :href="'/Admin/Category/Update/' + cate.id">Sửa</a>
+					<a :href="'/Admin/Category/Delete/' + cate.id">Xóa</a>
 				</td>
 			</tr>
-		}
-	</tbody>
-</table>
+		</tbody>
+	</table>
+</div>
 
-<code>@ViewBag.Sql</code>
+@section Scripts{
+
+	<script>
+		let noti = new AWN();
+
+		Vue.createApp({
+			data() {
+				return {
+					categories: []
+				}
+			},
+			methods: {
+				refreshData() {
+					noti.asyncBlock(
+						// lệnh gọi ajax
+						axios.get("/Admin/Category/GetAll"),
+						// xử lý khi thành công,
+						(response) => {
+							this.categories = response.data;
+							noti.success("Tải dữ liệu danh mục thành công");
+						},
+						// xử lý khi thất bại
+						(err) => {
+							console.log(err);
+						},
+						"Chờ tí"
+					);
+				}
+			},
+			mounted() {
+				this.refreshData();
+			}
+		}).mount("#tblCate");
+	</script>
+}

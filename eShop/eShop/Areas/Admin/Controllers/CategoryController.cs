@@ -76,15 +76,21 @@ namespace eShop.Areas.Admin.Controllers
 		{
 			if (_db.Products.Any(p => p.CategoryId == id))
 			{
-				TempData["Err"] = "Không thể xóa vì danh mục đã được sử dụng";
+				// Kiểm tra có sản phẩm nào đang dùng khóa ngoại đến danh mục này không
+				return Ok(new
+				{
+					success = false,
+					mesg = "Không thể xóa vì danh mục đã được sử dụng"
+				});
 			}
-			else
+
+			var category = _db.ProductCategories.Find(id);
+			_db.Remove(category);
+			_db.SaveChanges();
+			return Ok(new
 			{
-				var category = _db.ProductCategories.Find(id);
-				_db.Remove(category);
-				_db.SaveChanges();
-			}
-			return RedirectToAction(nameof(Index));
+				success = true
+			});
 		}
 	}
 }

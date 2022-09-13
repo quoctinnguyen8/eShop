@@ -7,19 +7,11 @@
 
 <h1>Index</h1>
 
-<p>
-	<a asp-action="Create">Create New</a>
-</p>
-@if (TempData["Err"] != null)
-{
-	<div class="alert alert-danger alert-dismissible fade show" role="alert">
-		@TempData["Err"]
-		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-	</div>
-}
-
 <div id="tblCate">
-	<button class="btn btn-info my-3" @@click="refreshData()">Làm mới dữ liệu</button>
+	<p class="my-3">
+		<button class="btn btn-primary me-1" data-bs-toggle="modal" data-bs-target="#modalCreate">Thêm danh mục</button>
+		<button class="btn btn-info" v-on:click="refreshData()">Làm mới dữ liệu</button>
+	</p>
 	<table class="table">
 		<thead>
 			<tr>
@@ -36,12 +28,16 @@
 				<td>{{new Date(cate.createdAt).toLocaleString()}}</td>
 				<td>
 					<a :href="'/Admin/Category/Update/' + cate.id">Sửa</a>
-					<a :href="'/Admin/Category/Delete/' + cate.id">Xóa</a>
+					<button class="btn btn-danger" v-on:click="deleteCategory(cate.id)">Xóa</button>
 				</td>
 			</tr>
 		</tbody>
 	</table>
+
+	<partial name="_Create" />
+
 </div>
+
 
 @section Scripts{
 
@@ -51,10 +47,39 @@
 		Vue.createApp({
 			data() {
 				return {
-					categories: []
+					categories: [],
+					cateData: {
+						id: null,
+						name: null
+					}
 				}
 			},
 			methods: {
+				showCreateModal() {
+					
+				},
+
+				deleteCategory(id) {
+					noti.confirm(
+						"Xác nhận xóa dữ liệu này?",
+						() => {
+							noti.async(
+								axios.get("/Admin/Category/Delete/" + id),
+								(response) => {
+									var data = response.data;
+									if (data.success) {
+										noti.success("Xóa danh mục thành công");
+										// Load lại dữ liệu trang index
+										this.refreshData();
+									} else {
+										noti.warning(data.mesg);
+									}
+								}
+							);
+						}
+					);
+				},
+
 				refreshData() {
 					noti.asyncBlock(
 						// lệnh gọi ajax
@@ -62,7 +87,6 @@
 						// xử lý khi thành công,
 						(response) => {
 							this.categories = response.data;
-							noti.success("Tải dữ liệu danh mục thành công");
 						},
 						// xử lý khi thất bại
 						(err) => {

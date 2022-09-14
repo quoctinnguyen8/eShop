@@ -34,12 +34,16 @@ namespace eShop.Areas.Admin.Controllers
 		public IActionResult Create() => View();
 
 		[HttpPost]
-		public IActionResult Create(AddOrUpdateCategoryVM categoryVM)
+		public IActionResult Create([FromBody] AddOrUpdateCategoryVM categoryVM)
 		{
 			// xác thực dữ liệu
 			if (ModelState.IsValid == false)
 			{
-				return View(categoryVM);
+				return Ok(new
+				{
+					success = false,
+					mesg = "Dữ liệu không hợp lệ, không thể thêm"
+				});
 			}
 			// Lưu vào db
 			var category = new ProductCategory();
@@ -48,7 +52,10 @@ namespace eShop.Areas.Admin.Controllers
 			_mapper.Map(categoryVM, category);
 			_db.ProductCategories.Add(category);
 			_db.SaveChanges();
-			return RedirectToAction(nameof(Index));
+			return Ok(new
+			{
+				success = true
+			});
 		}
 
 		public IActionResult Update(int id)
@@ -62,14 +69,24 @@ namespace eShop.Areas.Admin.Controllers
 		}
 
 		[HttpPost]
-		public IActionResult Update(int id, AddOrUpdateCategoryVM categoryVM)
+		public IActionResult Update(int id, [FromBody]AddOrUpdateCategoryVM categoryVM)
 		{
 			var category = _db.ProductCategories
 					.FirstOrDefault(c => c.Id == id);
 			category.UpdatedAt = DateTime.Now;
 			_mapper.Map(categoryVM, category);
 			_db.SaveChanges();
-			return RedirectToAction(nameof(Index));
+			return Ok(new
+			{
+				success = true
+			});
+		}
+
+		public IActionResult Detail(int id)
+		{
+			var cate = _db.ProductCategories.Find(id);
+			var cateVM = _mapper.Map<AddOrUpdateCategoryVM>(cate);
+			return Ok(cateVM);
 		}
 
 		public IActionResult Delete(int id)

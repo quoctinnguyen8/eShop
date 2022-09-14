@@ -9,7 +9,7 @@
 
 <div id="tblCate">
 	<p class="my-3">
-		<button class="btn btn-primary me-1" data-bs-toggle="modal" data-bs-target="#modalCreate">Thêm danh mục</button>
+		<button class="btn btn-primary me-1" v-on:click="showModalForAdd()">Thêm danh mục</button>
 		<button class="btn btn-info" v-on:click="refreshData()">Làm mới dữ liệu</button>
 	</p>
 	<table class="table">
@@ -27,7 +27,7 @@
 				<td>{{cate.name}}</td>
 				<td>{{new Date(cate.createdAt).toLocaleString()}}</td>
 				<td>
-					<a :href="'/Admin/Category/Update/' + cate.id">Sửa</a>
+					<button class="btn me-1" v-on:click="getDataForUpdate(cate.id)">Sửa</button>
 					<button class="btn btn-danger" v-on:click="deleteCategory(cate.id)">Xóa</button>
 				</td>
 			</tr>
@@ -42,21 +42,64 @@
 @section Scripts{
 
 	<script>
+
 		let noti = new AWN();
 
 		Vue.createApp({
 			data() {
 				return {
+					action: '',
+					mCreate: null,
 					categories: [],
 					cateData: {
-						id: null,
+						id: 0,
 						name: null
 					}
 				}
 			},
 			methods: {
-				showCreateModal() {
-					
+				getDataForUpdate(id) {
+					noti.async(
+						axios.get("/Admin/Category/Detail/" + id),
+						(response) => {
+							var data = response.data;
+							this.action = "Cập nhật";
+							this.cateData.id = data.id;
+							this.cateData.name = data.name;
+							this.mCreate.show();
+						}
+					);
+				},
+				showModalForAdd() {
+					this.action = "Thêm mới";
+					this.cateData.name = '';	// xóa data
+					this.cateData.id = 0;
+					this.mCreate.show();
+				},
+				addOrUpdateCateData() {
+					if (!this.cateData.name) {
+						noti.warning("Chưa nhập dữ liệu");
+						return;
+					}
+					let url = "/Admin/Category/Create";
+					if (this.cateData.id != 0) {
+						url = "/Admin/Category/Update/" + this.cateData.id;
+					}
+
+					noti.async(
+						axios.post(url, this.cateData),
+						(res) => {
+							if (res.data.success) {
+								noti.success(this.action + " danh mục thành công");
+								this.mCreate.hide();		// ẩn modal
+								this.cateData.name = '';	// xóa data
+								this.cateData.id = 0;
+								// Load lại dữ liệu trang index
+								this.refreshData();
+							} else {
+								noti.warning(data.mesg);
+							}
+						});
 				},
 
 				deleteCategory(id) {
@@ -98,6 +141,7 @@
 			},
 			mounted() {
 				this.refreshData();
+				this.mCreate = new bootstrap.Modal("#modalCreate");
 			}
 		}).mount("#tblCate");
 	</script>

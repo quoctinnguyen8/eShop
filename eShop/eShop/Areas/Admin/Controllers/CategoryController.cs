@@ -5,6 +5,7 @@ using eShop.Database;
 using eShop.Database.Entities;
 using eShop.WebConfigs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 
 namespace eShop.Areas.Admin.Controllers
@@ -15,6 +16,22 @@ namespace eShop.Areas.Admin.Controllers
 		public CategoryController(AppDbContext db, IMapper mapper) : base(db)
 		{
 			_mapper = mapper;
+		}
+
+		// Action này sẽ thực thi trước tất cả action khác
+		public override void OnActionExecuting(ActionExecutingContext context)
+		{
+			var method = context.HttpContext.Request.Method;
+
+			if (method == HttpMethod.Post.Method)
+			{
+				if (!ModelState.IsValid)
+				{
+					// Trả về JSON thông báo lỗi nếu dữ liệu không hợp lệ (JSON dạng array)
+					var errorModel = new SerializableError(ModelState);
+					context.Result = new BadRequestObjectResult(errorModel);
+				}
+			}
 		}
 
 		public IActionResult Index()
@@ -30,8 +47,6 @@ namespace eShop.Areas.Admin.Controllers
 			var data = query.ToList();
 			return data;
 		}
-
-		public IActionResult Create() => View();
 
 		[HttpPost]
 		public IActionResult Create([FromBody] AddOrUpdateCategoryVM categoryVM)
@@ -56,16 +71,6 @@ namespace eShop.Areas.Admin.Controllers
 			{
 				success = true
 			});
-		}
-
-		public IActionResult Update(int id)
-		{
-			var category = _db.ProductCategories
-					.Where(c => c.Id == id)
-					.ProjectTo<AddOrUpdateCategoryVM>(AutoMapperProfile.categoryAMC)
-					.FirstOrDefault();
-			if (category == null) return RedirectToAction(nameof(Index));
-			return View(category);
 		}
 
 		[HttpPost]

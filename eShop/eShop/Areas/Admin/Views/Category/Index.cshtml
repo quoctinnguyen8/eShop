@@ -42,8 +42,14 @@
 @section Scripts{
 
 	<script>
-
-		let noti = new AWN();
+		// cấu hình notification
+		let opt = {
+			minDurations: {
+				"async-block": 300,
+				"async": 300
+			}
+		};
+		let noti = new AWN(opt);
 
 		Vue.createApp({
 			data() {
@@ -64,16 +70,18 @@
 						(response) => {
 							var data = response.data;
 							this.action = "Cập nhật";
-							this.cateData.id = data.id;
-							this.cateData.name = data.name;
+							this.cateData = { ...data };
 							this.mCreate.show();
 						}
 					);
 				},
-				showModalForAdd() {
-					this.action = "Thêm mới";
+				clearData() {
 					this.cateData.name = '';	// xóa data
 					this.cateData.id = 0;
+				},
+				showModalForAdd() {
+					this.action = "Thêm mới";
+					this.clearData();
 					this.mCreate.show();
 				},
 				addOrUpdateCateData() {
@@ -92,14 +100,25 @@
 							if (res.data.success) {
 								noti.success(this.action + " danh mục thành công");
 								this.mCreate.hide();		// ẩn modal
-								this.cateData.name = '';	// xóa data
-								this.cateData.id = 0;
+								this.clearData();
 								// Load lại dữ liệu trang index
 								this.refreshData();
-							} else {
-								noti.warning(data.mesg);
 							}
-						});
+						},
+						(err) => {
+							let statusCode = err.response.status;
+
+							if (statusCode == 400) {
+								var errRes = err.response.data;		// object
+								for (let prop in errRes) {
+									for (let mesg of errRes[prop]) {	// errRes[prop] là array
+										noti.alert(mesg);
+										return;
+									}
+								}
+							}
+						}
+					);
 				},
 
 				deleteCategory(id) {

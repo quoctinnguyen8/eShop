@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using eShop.Areas.Admin.ViewModels.Category;
+using eShop.Areas.Admin.ViewModels.Product;
 using eShop.Database.Entities;
 
 namespace eShop.WebConfigs
@@ -20,6 +21,12 @@ namespace eShop.WebConfigs
 			// opt.CreateMap<ListItemCategoryVM, ProductCategory>().ReverseMap();
 			opt.CreateMap<ProductCategory, ListItemCategoryVM>();
 			opt.CreateMap<ProductCategory, AddOrUpdateCategoryVM>();
+		});
+
+		public static MapperConfiguration productAMC = new(opt =>
+		{
+			opt.CreateMap<Product, ListItemProductVM>()
+			.ForMember(vm => vm.CategoryName, opt => opt.MapFrom(x => x.ProductCategory == null ? "" : x.ProductCategory.Name));
 		});
 
 	}

@@ -1,0 +1,79 @@
+﻿@{
+	ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+	<a asp-action="Create">Create New</a>
+</p>
+
+<div id="product">
+	<table class="table">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Tên sản phẩm</th>
+				<th>Giá</th>
+				<th>Giá KM</th>
+				<th>Tồn kho</th>
+				<th>Danh mục</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr v-for="item in productData">
+				<td>{{item.id}}</td>
+				<td>{{item.name}}</td>
+				<td>{{item.price}}</td>
+				<td>{{item.discountPrice}}</td>
+				<td>{{item.inStock}}</td>
+				<td>{{item.categoryName}}</td>
+				<td></td>
+			</tr>
+		</tbody>
+	</table>
+</div>
+
+@section Scripts{
+
+	<script>
+		let noti = new AWN();
+
+		Vue.createApp({
+			data() {
+				return {
+					productData: []
+				}
+			},
+			methods: {
+				refresh() {
+					axios.get("/Admin/Product/GetAll")
+						.then(response => {
+							var data = response.data;
+							this.productData = [...data];
+						})
+						.catch(err => {
+							// Bị lỗi
+						});
+				},
+				refreshBlock() {
+					noti.asyncBlock(
+						axios.get("/Admin/Product/GetAll"),
+						response => {
+							var data = response.data;
+							this.productData = [...data];
+						},
+						null,
+						"Chờ xíu"
+					);
+				}
+			},
+			mounted() {
+				this.refresh();
+			}
+		}).mount("#product");
+
+	</script>
+
+}
